@@ -63,7 +63,7 @@
       background:var(--card); padding:4px; border-radius:6px;
     }
     .day {
-      position:relative; padding:0.5rem; text-align:right;
+      padding:0.5rem; text-align:right;
       background:rgba(0,0,0,0.03); cursor:pointer;
       user-select:none;
     }
@@ -77,12 +77,13 @@
       padding:4px; border-radius:6px;
       grid-template-columns:4rem repeat(7,1fr);
     }
-    .weekly .whabit { background:var(--card); padding:0.5rem; }
-    .weekly .wday {
-      background:rgba(0,0,0,0.03); padding:0.5rem; text-align:center;
-      cursor:pointer; user-select:none;
+    .whabit { padding:0.5rem; }
+    .wday {
+      padding:0.5rem; text-align:center;
+      background:rgba(0,0,0,0.03); cursor:pointer;
+      user-select:none;
     }
-    .weekly .wday[data-done="1"] {
+    .wday[data-done="1"] {
       background:var(--primary); color:#fff;
     }
 
@@ -90,8 +91,9 @@
     #dailyList { list-style:none; margin:1rem 0; }
     #dailyList li {
       background:var(--card); padding:0.5rem; margin:0.3rem 0;
-      border-radius:4px; display:flex; justify-content:space-between;
-      align-items:center; cursor:pointer; user-select:none;
+      border-radius:4px; display:flex;
+      justify-content:space-between; align-items:center;
+      cursor:pointer; user-select:none;
     }
     #dailyList li.done { text-decoration:line-through; opacity:0.6; }
 
@@ -136,7 +138,7 @@
     </div>
 
     <!-- Monthly Calendar -->
-    <div id="monthView" class="calendar"></div>
+    <div id="monthView" class="calendar hidden"></div>
 
     <!-- Weekly Grid -->
     <div id="weekView" class="weekly hidden"></div>
@@ -167,7 +169,7 @@
     let db = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"habits":[]}');
     const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
 
-    // UI Refs
+    // UI references
     const habitName   = document.getElementById('habitName');
     const habitIcon   = document.getElementById('habitIcon');
     const habitTime   = document.getElementById('habitTime');
@@ -187,20 +189,20 @@
     const btnTheme    = document.getElementById('btnTheme');
     const body        = document.body;
 
-    let currentView = 'month';
+    let currentView = null; // no view on load
 
     // Helpers
     const today = () => dayjs().format('YYYY-MM-DD');
-    function renderViews() {
+    const renderViews = () => {
       Object.keys(views).forEach(v => {
-        views[v].classList.toggle('hidden', v !== currentView);
+        views[v].classList.toggle('hidden', currentView !== v);
       });
-    }
-    function notify(msg) {
+    };
+    const notify = msg => {
       if (Notification.permission === 'granted') {
         new Notification('HabitFlow', { body: msg });
       }
-    }
+    };
 
     // Render Habit List
     function renderHabitList() {
@@ -221,15 +223,15 @@
 
     // Monthly View
     function renderMonth() {
-      const container = views.month;
-      container.innerHTML = '';
+      const c = views.month;
+      c.innerHTML = '';
       const daysInMonth = dayjs().daysInMonth();
       for (let d = 1; d <= daysInMonth; d++) {
         const date = dayjs().date(d).format('YYYY-MM-DD');
-        const doneCount = db.habits.filter(h => h.records?.[date]).length;
+        const done = db.habits.some(h => h.records?.[date]);
         const div = document.createElement('div');
         div.className = 'day';
-        if (doneCount) div.dataset.done = '1';
+        if (done) div.dataset.done = '1';
         div.textContent = d;
         div.onclick = () => {
           db.habits.forEach(h => {
@@ -238,27 +240,27 @@
           });
           save(); renderMonth();
         };
-        container.appendChild(div);
+        c.appendChild(div);
       }
     }
 
     // Weekly View
     function renderWeek() {
-      const container = views.week;
-      container.innerHTML = '';
-      container.appendChild(document.createElement('div')); // blank
+      const c = views.week;
+      c.innerHTML = '';
+      c.appendChild(document.createElement('div')); // blank header
       for (let i = 0; i < 7; i++) {
         const dow = dayjs().startOf('week').add(i, 'day');
         const hd = document.createElement('div');
         hd.className = 'wday';
         hd.textContent = dow.format('dd').toUpperCase();
-        container.appendChild(hd);
+        c.appendChild(hd);
       }
       db.habits.forEach(h => {
         const lbl = document.createElement('div');
         lbl.className = 'whabit';
         lbl.textContent = `${h.icon} ${h.name}`;
-        container.appendChild(lbl);
+        c.appendChild(lbl);
         for (let i = 0; i < 7; i++) {
           const date = dayjs().startOf('week').add(i, 'day').format('YYYY-MM-DD');
           const cell = document.createElement('div');
@@ -269,7 +271,7 @@
             h.records[date] = !h.records[date];
             save(); renderWeek();
           };
-          container.appendChild(cell);
+          c.appendChild(cell);
         }
       });
     }
@@ -279,14 +281,13 @@
       const list = views.day;
       list.innerHTML = '';
       const date = today();
-      db.habits.slice()
-        .sort((a,b) => (a.time||'') > (b.time||'') ? 1 : -1)
+      db.habits.slice().sort((a,b) => (a.time||'') > (b.time||'') ? 1 : -1)
         .forEach(h => {
           const done = h.records?.[date];
           const li = document.createElement('li');
           if (done) li.classList.add('done');
           li.innerHTML = `
-            <span>${h.icon} ${h.name}${h.time ? ' @'+h.time : ''}</span>
+            <span>${h.icon} ${h.name}${h.time? ' @'+h.time : ''}</span>
             <button>✔️</button>`;
           li.querySelector('button').onclick = () => {
             h.records = h.records || {};
@@ -303,19 +304,20 @@
       currentView = 'stats'; renderViews();
       const ctx = document.getElementById('statsChart').getContext('2d');
       const labels = db.habits.map(h => h.name);
-      const data = db.habits.map(h => {
+      const data   = db.habits.map(h => {
         const recs = Object.values(h.records || {});
-        return recs.length ? Math.round((recs.filter(Boolean).length/recs.length)*100) : 0;
+        return recs.length
+          ? Math.round((recs.filter(Boolean).length/recs.length)*100)
+          : 0;
       });
       new Chart(ctx, {
         type: 'bar',
-        data: { labels, datasets:[{label:'% Done', data, backgroundColor:labels.map(()=>varColor())}]},
+        data: { labels, datasets:[{ label:'% Done', data, backgroundColor:labels.map(()=>getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()) }]},
         options:{scales:{y:{beginAtZero:true,max:100}}}
       });
     }
-    function varColor(){ return getComputedStyle(document.documentElement).getPropertyValue('--primary').trim(); }
 
-    // Render everything
+    // Render All
     function renderAll() {
       renderHabitList();
       renderMonth();
@@ -325,18 +327,15 @@
     }
 
     // Bindings
+
     btnAddHabit.onclick = () => {
       const name = habitName.value.trim();
       if (!name) return alert('Enter a habit name');
       db.habits.push({ 
-        id: Date.now().toString(),
-        name,
-        icon: habitIcon.value,
-        time: habitTime.value,
-        records: {}
+        id:Date.now().toString(), 
+        name, icon:habitIcon.value, time:habitTime.value, records:{} 
       });
-      save();
-      habitName.value = ''; habitTime.value = '';
+      save(); habitName.value=''; habitTime.value='';
       console.log('✅ Habit added:', name);
       renderAll();
     };
@@ -344,40 +343,47 @@
     btnViews.forEach(b => {
       b.onclick = () => {
         const view = b.dataset.view;
-        if (currentView === view) return;    // se è già la vista corrente, non cambiare
-        currentView = view;
+        currentView = (currentView === view) ? null : view;
         renderViews();
       };
     });
-    btnStats.onclick = renderStats;
+
+    btnStats.onclick = () => {
+      currentView = (currentView === 'stats') ? null : 'stats';
+      renderViews();
+      if (currentView) renderStats();
+    };
+
     btnTheme.onclick = () => {
       const next = body.dataset.theme==='light' ? 'dark' : 'light';
       body.dataset.theme = next;
       btnTheme.textContent = next==='dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
     };
+
     btnExport.onclick = () => {
-      const blob = new Blob([JSON.stringify(db,null,2)], {type:'application/json'});
+      const blob = new Blob([JSON.stringify(db,null,2)], { type:'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = 'habitflow-data.json';
       a.click();
       URL.revokeObjectURL(a.href);
     };
+
     btnImport.onclick = () => importInput.click();
     importInput.onchange = e => {
       const file = e.target.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
+      const r = new FileReader();
+      r.onload = () => {
         try {
-          db = JSON.parse(reader.result);
+          db = JSON.parse(r.result);
           save(); renderAll();
           alert('Data imported successfully');
         } catch {
           alert('Invalid JSON file');
         }
       };
-      reader.readAsText(file);
+      r.readAsText(file);
       importInput.value = '';
     };
 
