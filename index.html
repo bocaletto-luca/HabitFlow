@@ -102,7 +102,7 @@
 <body data-theme="light">
   <header>
     <h1>HabitFlow</h1>
-    <p>Daily habit tracker with monthly, weekly, daily views & reminders</p>
+    <p>Daily habit tracker with multiple views & reminders</p>
   </header>
 
   <main>
@@ -168,33 +168,33 @@
     const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
 
     // UI Refs
-    const habitName     = document.getElementById('habitName');
-    const habitIcon     = document.getElementById('habitIcon');
-    const habitTime     = document.getElementById('habitTime');
-    const btnAddHabit   = document.getElementById('btnAddHabit');
-    const habitList     = document.getElementById('habitList');
-    const views         = {
+    const habitName   = document.getElementById('habitName');
+    const habitIcon   = document.getElementById('habitIcon');
+    const habitTime   = document.getElementById('habitTime');
+    const btnAddHabit = document.getElementById('btnAddHabit');
+    const habitList   = document.getElementById('habitList');
+    const views       = {
       month: document.getElementById('monthView'),
       week:  document.getElementById('weekView'),
       day:   document.getElementById('dailyList'),
       stats: document.getElementById('stats')
     };
-    const btnViews      = [...document.querySelectorAll('.btnView')];
-    const btnStats      = document.getElementById('btnStats');
-    const btnExport     = document.getElementById('btnExport');
-    const btnImport     = document.getElementById('btnImport');
-    const importInput   = document.getElementById('importInput');
-    const btnTheme      = document.getElementById('btnTheme');
-    const body          = document.body;
+    const btnViews    = [...document.querySelectorAll('.btnView')];
+    const btnStats    = document.getElementById('btnStats');
+    const btnExport   = document.getElementById('btnExport');
+    const btnImport   = document.getElementById('btnImport');
+    const importInput = document.getElementById('importInput');
+    const btnTheme    = document.getElementById('btnTheme');
+    const body        = document.body;
 
     let currentView = 'month';
 
     // Helpers
     const today = () => dayjs().format('YYYY-MM-DD');
     function renderViews() {
-      for (let v in views) {
+      Object.keys(views).forEach(v => {
         views[v].classList.toggle('hidden', v !== currentView);
-      }
+      });
     }
     function notify(msg) {
       if (Notification.permission === 'granted') {
@@ -246,8 +246,7 @@
     function renderWeek() {
       const container = views.week;
       container.innerHTML = '';
-      // blank header
-      container.appendChild(document.createElement('div'));
+      container.appendChild(document.createElement('div')); // blank
       for (let i = 0; i < 7; i++) {
         const dow = dayjs().startOf('week').add(i, 'day');
         const hd = document.createElement('div');
@@ -256,12 +255,10 @@
         container.appendChild(hd);
       }
       db.habits.forEach(h => {
-        // habit label col
         const lbl = document.createElement('div');
         lbl.className = 'whabit';
         lbl.textContent = `${h.icon} ${h.name}`;
         container.appendChild(lbl);
-        // 7 days
         for (let i = 0; i < 7; i++) {
           const date = dayjs().startOf('week').add(i, 'day').format('YYYY-MM-DD');
           const cell = document.createElement('div');
@@ -308,18 +305,17 @@
       const labels = db.habits.map(h => h.name);
       const data = db.habits.map(h => {
         const recs = Object.values(h.records || {});
-        return recs.length
-          ? Math.round((recs.filter(Boolean).length / recs.length) * 100)
-          : 0;
+        return recs.length ? Math.round((recs.filter(Boolean).length/recs.length)*100) : 0;
       });
       new Chart(ctx, {
         type: 'bar',
-        data: { labels, datasets: [{ label:'% Done', data, backgroundColor:labels.map(()=>'var(--primary)') }]},
-        options:{scales:{y:{beginAtZero:true, max:100}}}
+        data: { labels, datasets:[{label:'% Done', data, backgroundColor:labels.map(()=>varColor())}]},
+        options:{scales:{y:{beginAtZero:true,max:100}}}
       });
     }
+    function varColor(){ return getComputedStyle(document.documentElement).getPropertyValue('--primary').trim(); }
 
-    // Render Everything
+    // Render everything
     function renderAll() {
       renderHabitList();
       renderMonth();
@@ -328,33 +324,39 @@
       renderViews();
     }
 
-    // Event Bindings
+    // Bindings
     btnAddHabit.onclick = () => {
       const name = habitName.value.trim();
       if (!name) return alert('Enter a habit name');
-      const icon = habitIcon.value;
-      const time = habitTime.value;
-      db.habits.push({ id:Date.now().toString(), name, icon, time, records:{} });
-      save(); habitName.value = ''; habitTime.value = '';
+      db.habits.push({ 
+        id: Date.now().toString(),
+        name,
+        icon: habitIcon.value,
+        time: habitTime.value,
+        records: {}
+      });
+      save();
+      habitName.value = ''; habitTime.value = '';
       console.log('✅ Habit added:', name);
       renderAll();
     };
 
     btnViews.forEach(b => {
       b.onclick = () => {
-        currentView = b.dataset.view;
+        const view = b.dataset.view;
+        if (currentView === view) return;    // se è già la vista corrente, non cambiare
+        currentView = view;
         renderViews();
       };
     });
-    btnStats.onclick  = renderStats;
-    btnTheme.onclick  = () => {
-      const next = body.getAttribute('data-theme')==='light' ? 'dark' : 'light';
-      body.setAttribute('data-theme', next);
+    btnStats.onclick = renderStats;
+    btnTheme.onclick = () => {
+      const next = body.dataset.theme==='light' ? 'dark' : 'light';
+      body.dataset.theme = next;
       btnTheme.textContent = next==='dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
     };
-
     btnExport.onclick = () => {
-      const blob = new Blob([JSON.stringify(db, null,2)], {type:'application/json'});
+      const blob = new Blob([JSON.stringify(db,null,2)], {type:'application/json'});
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = 'habitflow-data.json';
