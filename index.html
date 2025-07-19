@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>HabitFlow – Daily Habit Tracker</title>
-  <meta name="description" content="HabitFlow: one-page daily habit tracker with monthly, weekly, daily views, reminders, stats, export/import, and dark mode.">
+  <meta name="description" content="HabitFlow: one-page daily habit tracker with multiple independent togglable views, reminders, stats, export/import, and dark mode.">
   <meta name="author" content="Bocaletto Luca"/>
   <style>
     :root {
@@ -15,162 +15,122 @@
       --primary-dark: #003f7d;
     }
     [data-theme="dark"] {
-      --bg: #1e1e1e;
-      --card: #2c2c2c;
-      --text: #ddd;
-      --primary: #339af0;
-      --primary-dark: #1c7ed6;
+      --bg: #1e1e1e; --card: #2c2c2c; --text: #ddd;
+      --primary: #339af0; --primary-dark: #1c7ed6;
     }
     * { box-sizing:border-box; margin:0; padding:0; }
     body {
-      display:flex; flex-direction:column;
-      min-height:100vh;
-      font-family:Arial,sans-serif;
-      background:var(--bg);
-      color:var(--text);
+      display:flex; flex-direction:column; min-height:100vh;
+      font-family:Arial,sans-serif; background:var(--bg); color:var(--text);
     }
     header, footer {
-      background:var(--primary);
-      color:#fff;
-      text-align:center;
-      padding:1rem;
+      background:var(--primary); color:#fff; text-align:center; padding:1rem;
     }
     footer a { color:#fff; text-decoration:underline; }
     main {
-      flex:1;
-      max-width:900px;
-      width:100%;
-      margin:1rem auto;
-      padding:1rem;
+      flex:1; max-width:900px; width:100%; margin:1rem auto; padding:1rem;
     }
-    .controls {
-      display:flex; flex-wrap:wrap; gap:0.5rem;
-      margin-bottom:1rem;
-    }
+    .controls { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem; }
     .controls button {
-      padding:0.5rem 1rem;
-      border:none; border-radius:4px;
-      background:var(--primary); color:#fff;
-      cursor:pointer; transition:background .2s;
+      padding:0.5rem 1rem; border:none; border-radius:4px;
+      background:var(--primary); color:#fff; cursor:pointer;
+      transition:background .2s;
     }
     .controls button:hover { background:var(--primary-dark); }
     .hidden { display:none; }
-    /* Habit Form */
-    #habitForm {
-      display:flex; flex-wrap:wrap; gap:0.5rem;
-      margin-bottom:1rem;
-    }
+
+    /* Habit Form & List */
+    #habitForm { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem; }
     #habitForm input, #habitForm select, #habitForm input[type="time"] {
-      padding:0.4rem; border:1px solid #ccc; border-radius:4px;
-      font-size:1rem;
+      padding:0.4rem; border:1px solid #ccc; border-radius:4px; font-size:1rem;
     }
-    /* Habit List */
     #habitListContainer { margin-bottom:1rem; }
     #habitList { list-style:none; }
     #habitList li {
-      background:var(--card); padding:.5rem;
-      margin:.2rem 0; border-radius:4px;
-      display:flex; justify-content:space-between;
-      align-items:center;
+      background:var(--card); padding:.5rem; margin:.2rem 0; border-radius:4px;
+      display:flex; justify-content:space-between; align-items:center;
     }
     #habitList li button {
-      background:transparent; border:none; font-size:1rem;
-      cursor:pointer;
+      background:transparent; border:none; font-size:1rem; cursor:pointer;
     }
-    /* Monthly View */
+
+    /* Monthly Calendar */
     #monthView {
-      display:grid;
-      grid-template-columns:repeat(7,1fr);
-      gap:2px;
-      background:var(--card);
-      padding:4px;
-      border-radius:6px;
-      margin-bottom:1rem;
+      display:grid; grid-template-columns:repeat(7,1fr); gap:2px;
+      background:var(--card); padding:4px; border-radius:6px; margin-bottom:1rem;
     }
     #monthView .day {
-      padding:.5rem; text-align:right;
-      background:rgba(0,0,0,0.05);
-      cursor:pointer; user-select:none;
-      border-radius:4px;
+      padding:.5rem; text-align:right; background:rgba(0,0,0,0.05);
+      cursor:pointer; user-select:none; border-radius:4px;
     }
-    #monthView .day.done {
-      background:var(--primary); color:#fff;
-    }
-    /* Weekly View */
-    #weekView {
-      width:100%; overflow-x:auto; margin-bottom:1rem;
-    }
+    #monthView .day.done { background:var(--primary); color:#fff; }
+
+    /* Weekly Table */
+    #weekView { overflow-x:auto; margin-bottom:1rem; }
     #weekTable {
-      width:100%; border-collapse:collapse;
-      background:var(--card); border-radius:6px;
-      overflow:hidden;
+      width:100%; border-collapse:collapse; background:var(--card);
+      border-radius:6px; overflow:hidden;
     }
     #weekTable th, #weekTable td {
-      padding:8px; border:1px solid #eee;
-      text-align:center; min-width:40px;
+      padding:.5rem; border:1px solid #eee; text-align:center;
+      min-width:40px;
     }
-    #weekTable td.habit {
-      text-align:left; background:rgba(0,0,0,0.05);
-    }
-    #weekTable td.done {
-      background:var(--primary); color:#fff;
-    }
-    /* Daily View */
+    #weekTable td.habit { background:rgba(0,0,0,0.05); text-align:left; }
+    #weekTable td.done { background:var(--primary); color:#fff; }
+
+    /* Daily List */
     #dailyList { list-style:none; margin-bottom:1rem; }
     #dailyList li {
-      background:var(--card); padding:.5rem;
-      margin:.3rem 0; border-radius:4px;
-      display:flex; justify-content:space-between;
+      background:var(--card); padding:.5rem; margin:.3rem 0;
+      border-radius:4px; display:flex; justify-content:space-between;
       align-items:center; cursor:pointer; user-select:none;
     }
-    #dailyList li.done {
-      text-decoration:line-through; opacity:.6;
-    }
+    #dailyList li.done { text-decoration:line-through; opacity:.6; }
     #dailyList li button {
-      background:transparent; border:none; font-size:1rem;
-      cursor:pointer;
+      background:transparent; border:none; font-size:1rem; cursor:pointer;
     }
+
     /* Stats */
-    #stats { background:var(--card); padding:1rem; border-radius:6px; }
+    #stats { background:var(--card); padding:1rem; border-radius:6px; margin-bottom:1rem; }
   </style>
 </head>
 <body data-theme="light">
   <header>
     <h1>HabitFlow</h1>
-    <p>Track habits with Monthly, Weekly, Daily views & reminders</p>
+    <p>Track habits with independent togglable views & reminders</p>
   </header>
 
   <main>
-    <!-- create habit -->
+    <!-- Habit Form -->
     <div id="habitForm">
-      <input type="text" id="habitName" placeholder="Habit name…" />
+      <input type="text" id="habitName" placeholder="Habit name…"/>
       <select id="habitIcon">
         <option>🔥</option><option>💪</option><option>🧘</option>
         <option>📚</option><option>🍎</option>
       </select>
-      <input type="time" id="habitTime" title="Optional reminder time" />
+      <input type="time" id="habitTime" title="Optional reminder time"/>
       <button id="btnAddHabit">Add Habit</button>
     </div>
 
-    <!-- list habits -->
+    <!-- Habit List -->
     <div id="habitListContainer">
       <h3>Your Habits</h3>
       <ul id="habitList"></ul>
     </div>
 
-    <!-- controls -->
+    <!-- Controls -->
     <div class="controls">
-      <button data-view="month" class="btnView">Monthly</button>
-      <button data-view="week"  class="btnView">Weekly</button>
-      <button data-view="day"   class="btnView">Daily</button>
-      <button id="btnStats">Stats</button>
+      <button id="btnMonth">Toggle Monthly</button>
+      <button id="btnWeek">Toggle Weekly</button>
+      <button id="btnDay">Toggle Daily</button>
+      <button id="btnStats">Toggle Stats</button>
       <button id="btnExport">Export</button>
       <button id="btnImport">Import</button>
       <button id="btnTheme">🌙 Dark Mode</button>
       <input type="file" id="importInput" accept=".json" class="hidden"/>
     </div>
 
-    <!-- views -->
+    <!-- Views -->
     <div id="monthView" class="hidden"></div>
 
     <div id="weekView" class="hidden">
@@ -192,70 +152,62 @@
     <a href="https://github.com/bocaletto-luca/HabitFlow" target="_blank" rel="noopener">Repository</a>
   </footer>
 
-  <!-- dependencies -->
+  <!-- Dependencies -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.7/dayjs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const KEY = 'HabitFlowDB';
-    let db = JSON.parse(localStorage.getItem(KEY) || '{"habits":[]}');
-    function save(){ localStorage.setItem(KEY, JSON.stringify(db)); }
+    const STORAGE = 'HabitFlowDB';
+    let db = JSON.parse(localStorage.getItem(STORAGE) || '{"habits":[]}');
+    const save = () => localStorage.setItem(STORAGE, JSON.stringify(db));
 
     // refs
-    const hfName   = document.getElementById('habitName');
-    const hfIcon   = document.getElementById('habitIcon');
-    const hfTime   = document.getElementById('habitTime');
-    const btnAdd   = document.getElementById('btnAddHabit');
-    const listUL   = document.getElementById('habitList');
-    const views    = {
-      month: document.getElementById('monthView'),
-      week:  document.getElementById('weekView'),
-      day:   document.getElementById('dailyList'),
-      stats: document.getElementById('stats')
-    };
-    const btnViews = [...document.querySelectorAll('.btnView')];
-    const btnStats = document.getElementById('btnStats');
-    const btnExp   = document.getElementById('btnExport');
-    const btnImp   = document.getElementById('btnImport');
-    const inpImp   = document.getElementById('importInput');
-    const btnTheme = document.getElementById('btnTheme');
-    const weekTbl  = document.getElementById('weekTable');
-    const weekTbody= weekTbl.querySelector('tbody');
-    const body     = document.body;
-    let current = null;
+    const hfName  = document.getElementById('habitName');
+    const hfIcon  = document.getElementById('habitIcon');
+    const hfTime  = document.getElementById('habitTime');
+    const btnAdd  = document.getElementById('btnAddHabit');
+    const ulList  = document.getElementById('habitList');
+    const btnM    = document.getElementById('btnMonth');
+    const btnW    = document.getElementById('btnWeek');
+    const btnD    = document.getElementById('btnDay');
+    const btnS    = document.getElementById('btnStats');
+    const btnE    = document.getElementById('btnExport');
+    const btnI    = document.getElementById('btnImport');
+    const inpI    = document.getElementById('importInput');
+    const btnT    = document.getElementById('btnTheme');
+    const vMonth  = document.getElementById('monthView');
+    const vWeek   = document.getElementById('weekView');
+    const weekTb  = document.getElementById('weekTable');
+    const weekBody= weekTb.querySelector('tbody');
+    const vDay    = document.getElementById('dailyList');
+    const vStats  = document.getElementById('stats');
+    const ctx     = document.getElementById('statsChart').getContext('2d');
+    const body    = document.body;
 
     // helper
     const today = () => dayjs().format('YYYY-MM-DD');
-    function toggle(v) {
-      current = current===v? null : v;
-      Object.keys(views).forEach(k=>{
-        views[k].classList.toggle('hidden', current!==k);
-      });
-    }
-    function notify(msg) {
-      if(Notification.permission==='granted') new Notification('HabitFlow',{body:msg});
-    }
+    const toggle = el => el.classList.toggle('hidden');
+    const notify = msg => { if(Notification.permission==='granted') new Notification('HabitFlow',{body:msg}); };
 
-    // render list
+    // render functions
     function renderList(){
-      listUL.innerHTML='';
+      ulList.innerHTML = '';
       db.habits.forEach(h=>{
         const li=document.createElement('li');
         li.textContent=`${h.icon} ${h.name}`+(h.time?` @${h.time}`:'');
-        const del=document.createElement('button');
-        del.textContent='🗑️';
-        del.onclick=()=>{
+        const dbtn=document.createElement('button');
+        dbtn.textContent='🗑️';
+        dbtn.onclick=()=>{
           db.habits=db.habits.filter(x=>x.id!==h.id);
           save(); renderAll();
         };
-        li.appendChild(del);
-        listUL.appendChild(li);
+        li.appendChild(dbtn);
+        ulList.appendChild(li);
       });
     }
 
-    // monthly
     function renderMonth(){
-      const m=views.month; m.innerHTML='';
+      vMonth.innerHTML='';
       const dim=dayjs().daysInMonth();
       for(let d=1;d<=dim;d++){
         const date=dayjs().date(d).format('YYYY-MM-DD');
@@ -270,14 +222,13 @@
           });
           save(); renderMonth();
         };
-        m.appendChild(div);
+        vMonth.appendChild(div);
       }
     }
 
-    // weekly
     function renderWeek(){
       // header
-      const thead=weekTbl.querySelector('thead tr');
+      const thead=weekTb.querySelector('thead tr');
       thead.innerHTML='<th>Habit</th>';
       for(let i=0;i<7;i++){
         const dow=dayjs().startOf('week').add(i,'day');
@@ -286,36 +237,35 @@
         thead.appendChild(th);
       }
       // body
-      weekTbody.innerHTML='';
+      weekBody.innerHTML='';
       db.habits.forEach(h=>{
         const tr=document.createElement('tr');
         const tdLab=document.createElement('td');
-        tdLab.textContent=`${h.icon} ${h.name}`;
         tdLab.className='habit';
+        tdLab.textContent=`${h.icon} ${h.name}`;
         tr.appendChild(tdLab);
         for(let i=0;i<7;i++){
-          const date=dayjs().startOf('week').add(i,'day').format('YYYY-MM-DD');
+          const d=dayjs().startOf('week').add(i,'day').format('YYYY-MM-DD');
           const td=document.createElement('td');
-          if(h.records?.[date]) td.classList.add('done');
+          if(h.records?.[d]) td.classList.add('done');
           td.onclick=()=>{
             h.records=h.records||{};
-            h.records[date]=!h.records[date];
+            h.records[d]=!h.records[d];
             save(); renderWeek();
           };
           tr.appendChild(td);
         }
-        weekTbody.appendChild(tr);
+        weekBody.appendChild(tr);
       });
     }
 
-    // daily
     function renderDay(){
-      const ul=views.day; ul.innerHTML='';
+      vDay.innerHTML='';
       const dt=today();
       db.habits.slice().sort((a,b)=>(a.time||'')>(b.time||'')?1:-1)
       .forEach(h=>{
-        const li=document.createElement('li');
         const done=!!h.records?.[dt];
+        const li=document.createElement('li');
         if(done) li.classList.add('done');
         li.innerHTML=`<span>${h.icon} ${h.name}${h.time?` @${h.time}`:''}</span><button>✔️</button>`;
         li.querySelector('button').onclick=()=>{
@@ -324,65 +274,58 @@
           save(); renderDay();
           if(h.time&&h.records[dt]) notify(`Completed: ${h.name}`);
         };
-        ul.appendChild(li);
+        vDay.appendChild(li);
       });
     }
 
-    // stats
     function renderStats(){
-      toggle('stats');
-      const ctx=document.getElementById('statsChart').getContext('2d');
       const labels=db.habits.map(h=>h.name);
       const data=db.habits.map(h=>{
-        const recs=Object.values(h.records||{});
-        return recs.length?Math.round(recs.filter(Boolean).length/recs.length*100):0;
+        const vals=Object.values(h.records||{});
+        return vals.length?Math.round(vals.filter(Boolean).length/vals.length*100):0;
       });
       new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'% Done',data,backgroundColor:labels.map(()=>getComputedStyle(document.documentElement).getPropertyValue('--primary').trim())}]},options:{scales:{y:{beginAtZero:true,max:100}}}});
     }
 
-    // render all
     function renderAll(){
       renderList();
       renderMonth();
       renderWeek();
       renderDay();
-      toggle(current);
+      renderStats();
     }
 
     // bindings
     btnAdd.onclick=()=>{
-      const name=hfName.value.trim();
-      if(!name)return alert('Enter a habit name');
-      db.habits.push({id:Date.now().toString(),name,icon:hfIcon.value,time:hfTime.value,records:{}});
+      const n=hfName.value.trim();
+      if(!n)return alert('Enter a habit name');
+      db.habits.push({id:Date.now().toString(),name:n,icon:hfIcon.value,time:hfTime.value,records:{}});
       save(); hfName.value=''; hfTime.value='';
       renderAll();
     };
-    btnViews.forEach(b=>b.onclick=()=>toggle(b.dataset.view));
-    btnStats.onclick=renderStats;
-    btnTheme.onclick=()=>{
-      const t=body.dataset.theme==='light'?'dark':'light';
-      body.dataset.theme=t;
-      btnTheme.textContent=t==='dark'?'☀️ Light Mode':'🌙 Dark Mode';
+    btnM.onclick=()=>toggle(vMonth);
+    btnW.onclick=()=>toggle(vWeek);
+    btnD.onclick=()=>toggle(vDay);
+    btnS.onclick=()=>toggle(vStats);
+    btnT.onclick=()=>{
+      const nm=body.dataset.theme==='light'?'dark':'light';
+      body.dataset.theme=nm;
+      btnT.textContent=nm==='dark'?'☀️ Light Mode':'🌙 Dark Mode';
     };
-    btnExp.onclick=()=>{
+    btnE.onclick=()=>{
       const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
       const a=document.createElement('a');
       a.href=URL.createObjectURL(blob);
-      a.download='habitflow-data.json';
-      a.click();
+      a.download='habitflow.json'; a.click();
       URL.revokeObjectURL(a.href);
     };
-    btnImp.onclick=()=>inpImp.click();
-    inpImp.onchange=e=>{
+    btnI.onclick=()=>inpI.click();
+    inpI.onchange=e=>{
       const f=e.target.files[0];
       if(!f)return;
       const r=new FileReader();
-      r.onload=()=>{
-        try{db=JSON.parse(r.result);save();renderAll();alert('Imported');}
-        catch{alert('Invalid JSON');}
-      };
-      r.readAsText(f);
-      inpImp.value='';
+      r.onload=()=>{try{db=JSON.parse(r.result);save();renderAll();alert('Imported');}catch{alert('Invalid JSON');}};
+      r.readAsText(f); inpI.value='';
     };
 
     Notification.requestPermission();
