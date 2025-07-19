@@ -1,127 +1,114 @@
 # HabitFlow
 
-HabitFlow è un tracker di abitudini “one-page” che ti permette di tenere traccia delle tue routine quotidiane con diverse viste (Mensile, Settimanale, Giornaliera) e statistiche, il tutto senza bisogno di backend. Puoi aggiungere, modificare o eliminare abitudini, registrare completamenti giornalieri e ricevere notifiche personalizzate.
+HabitFlow is a single-page web application that lets you track and visualize daily habits without any server-side code. With independent toggles for Monthly, Weekly, Daily and Stats views, you can mark activities as completed, inspect your progress in a heatmap calendar or interactive tables, and analyze completion rates with bar charts. Add habits with custom emoji icons and optional reminder times, switch between light and dark themes, and back up or restore your data via JSON export/import. Built with pure HTML5, CSS3, and JavaScript, it uses Day.js for date handling, Chart.js for charts, Web Notifications for reminders, and localStorage for persistence.
 
 ---
 
-## Sommario
+## Features
 
-- [Caratteristiche](#caratteristiche)  
-- [Anteprima Demo](#anteprima-demo)  
-- [Installazione](#installazione)  
-- [Utilizzo](#utilizzo)  
-- [Personalizzazione](#personalizzazione)  
-- [Struttura dei File](#struttura-dei-file)  
-- [Contributi](#contributi)  
-- [Licenza](#licenza)  
-- [Autore](#autore)  
-
----
-
-## Caratteristiche
-
-- Creazione/gestione abitudini con nome, icona (emoji) e orario promemoria opzionale  
-- Viste indipendenti toggle-able: Mensile, Settimanale, Giornaliera, Statistiche  
-- Calendario mensile con click per segnare “fatto”/“non fatto”  
-- Tabella settimanale interattiva con completamenti per giorno  
-- Elenco giornaliero ordinato per orario  
-- Grafico a barre delle percentuali di completamento (Chart.js)  
-- Notifiche desktop/mobile (Web Notifications API)  
-- Modalità Dark/Light  
-- Persistenza in `localStorage`, export/import JSON per backup  
-- 100% front-end: HTML5, CSS3, JavaScript (Day.js, Chart.js)  
+- Create, edit and delete habits with name, emoji icon and optional reminder time  
+- Toggleable views:  
+  - Monthly heatmap calendar  
+  - Weekly interactive table  
+  - Daily sorted list  
+  - Completion statistics (bar chart)  
+- Click any day or cell to mark a habit as done/undone  
+- Dark/Light mode switch  
+- Desktop and mobile notifications for reminders  
+- Data persisted client-side in localStorage  
+- Export and import your entire habit database as JSON  
+- No dependencies beyond a single HTML file  
 
 ---
 
-## Anteprima Demo
+## Demo
 
-Puoi testare la demo live su GitHub Pages:  
+Access the live demo on GitHub Pages:  
 https://bocaletto-luca.github.io/HabitFlow/index.html
 
 ---
 
-## Installazione
+## Installation
 
-1. Clona il repository sul tuo computer:  
+1. Clone this repository:  
    ```bash
    git clone https://github.com/bocaletto-luca/HabitFlow.git
    cd HabitFlow
    ```
-2. Avvia un server statico nella cartella del progetto:  
-   - Con Python 3  
-     ```bash
-     python3 -m http.server 8000
-     ```  
-   - Con Node.js  
-     ```bash
-     npx http-server . -p 8000
-     ```
-3. Apri il browser su `http://localhost:8000/index.html`
+2. Serve the directory with a static HTTP server:  
+   ```bash
+   # Python 3
+   python3 -m http.server 8000
+
+   # Node.js http-server
+   npx http-server . -p 8000
+   ```
+3. Open your browser at `http://localhost:8000/index.html`.
 
 ---
 
-## Utilizzo
+## Usage
 
-1. **Aggiungi una nuova abitudine**  
-   - Inserisci nome, scegli un’icona emoji e, se desideri, imposta un orario di promemoria.  
-   - Clicca **Add Habit**.
+1. **Add a new habit**  
+   - Enter a name, choose an emoji, optionally set a reminder time, then click **Add Habit**.
 
-2. **Mostra/Nascondi viste**  
-   - **Toggle Monthly**: calendario mensile.  
-   - **Toggle Weekly**: tabella settimanale.  
-   - **Toggle Daily**: elenco di oggi.  
-   - **Toggle Stats**: grafico delle percentuali.
+2. **Manage views**  
+   - Click **Toggle Monthly**, **Toggle Weekly**, **Toggle Daily** or **Toggle Stats** to show or hide each view independently.
 
-3. **Registra completamenti**  
-   - In ciascuna vista clicca sulla cella/giorno corrispondente per marcare “fatto” o rimuovere la marcatura.
+3. **Track completions**  
+   - In any view, click on a calendar day, weekly cell or daily item’s button to mark it done or undone.
 
-4. **Dark/Light Mode**  
-   - Clicca l’icona 🌙 per passare alla modalità scura o ☀️ per tornare chiaro.
+4. **Notifications**  
+   - Grant permission when prompted. If you set a reminder time, HabitFlow will fire a notification on completion.
 
-5. **Backup & Ripristino**  
-   - **Export**: scarica un file JSON di backup.  
-   - **Import**: carica un backup JSON per ripristinare le abitudini e i record.
+5. **Dark/Light mode**  
+   - Click the 🌙 Dark Mode button to switch themes.
+
+6. **Backup & restore**  
+   - Use **Export** to download your data as JSON and **Import** to restore from a JSON file.
 
 ---
 
-## Personalizzazione
+## Customization
 
-- **Temi**: modifica le variabili CSS `--primary`, `--bg`, `--text` nel `<style>`.  
-- **Avvisi**: personalizza il testo o l’icona di notifica nel metodo `notify()` dello script.  
-- **Date**: utilizza Day.js per cambiare formato o logica di calcolo.
+- Change primary, background and text colors by editing the CSS variables in the `<style>` block.  
+- Adjust date formats or locale by modifying the Day.js code.  
+- Tweak chart settings in the `renderStats()` function.  
+- Replace emoji icons with images or other symbols if desired.
 
 ---
 
-## Struttura dei File
+## File Structure
 
 ```text
 HabitFlow/
-└── index.html       # Single-page application (HTML, CSS, JS)
+├── index.html    # Single-page application including HTML, CSS, JS
+└── README.md     # This document
 ```
 
 ---
 
-## Contributi
+## Contributing
 
-Contributi, issue e richieste di funzionalità sono benvenuti:
+Contributions, issues and feature requests are welcome. To contribute:
 
-1. Fork del progetto  
-2. Crea un branch (`git checkout -b feature/my-feature`)  
-3. Fai il commit delle tue modifiche (`git commit -m "Aggiunta mio feature"`)  
-4. Push al branch (`git push origin feature/my-feature`)  
-5. Apri una Pull Request  
+1. Fork the repository  
+2. Create a new branch (`git checkout -b feature/my-feature`)  
+3. Commit your changes (`git commit -m "Add my feature"`)  
+4. Push to your branch (`git push origin feature/my-feature`)  
+5. Open a Pull Request
 
-Assicurati di rispettare lo stile di codice esistente e di testare le nuove funzionalità.
-
----
-
-## Licenza
-
-Questo progetto è rilasciato sotto licenza **GPL**. Vedi il file [LICENSE](LICENSE) per i dettagli.
+Please follow the existing code style and test across major browsers.
 
 ---
 
-## Autore
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## Author
 
 **Bocaletto Luca**  
 - GitHub: [@bocaletto-luca](https://github.com/bocaletto-luca)  
