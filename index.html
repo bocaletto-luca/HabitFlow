@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>HabitFlow – Daily Habit Tracker</title>
-  <meta name="description" content="HabitFlow: one-page daily habit tracker with monthly/weekly/daily views, streaks, reminders, export/import.">
+  <meta name="description" content="HabitFlow: one-page daily habit tracker with monthly, weekly, daily views, reminders, stats, export/import, and dark mode.">
   <meta name="author" content="Bocaletto Luca"/>
   <style>
     :root {
@@ -24,79 +24,112 @@
     * { box-sizing:border-box; margin:0; padding:0; }
     body {
       display:flex; flex-direction:column;
-      font-family:Arial,sans-serif;
-      background:var(--bg); color:var(--text);
       min-height:100vh;
+      font-family:Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
     }
     header, footer {
       background:var(--primary);
-      color:#fff; text-align:center; padding:1rem;
+      color:#fff;
+      text-align:center;
+      padding:1rem;
     }
     footer a { color:#fff; text-decoration:underline; }
     main {
-      flex:1; padding:1rem; max-width:900px; margin:0 auto;
+      flex:1;
+      max-width:900px;
+      width:100%;
+      margin:1rem auto;
+      padding:1rem;
     }
-    .controls { display:flex; flex-wrap:wrap; gap:0.5rem; margin:1rem 0; }
+    .controls {
+      display:flex; flex-wrap:wrap; gap:0.5rem;
+      margin-bottom:1rem;
+    }
     .controls button {
-      padding:0.5rem 1rem; border:none; border-radius:4px;
-      background:var(--primary); color:#fff; cursor:pointer;
+      padding:0.5rem 1rem;
+      border:none; border-radius:4px;
+      background:var(--primary); color:#fff;
+      cursor:pointer; transition:background .2s;
     }
     .controls button:hover { background:var(--primary-dark); }
     .hidden { display:none; }
-
-    /* Habit Form & List */
-    #habitForm { display:flex; gap:0.5rem; flex-wrap:wrap; }
+    /* Habit Form */
+    #habitForm {
+      display:flex; flex-wrap:wrap; gap:0.5rem;
+      margin-bottom:1rem;
+    }
     #habitForm input, #habitForm select, #habitForm input[type="time"] {
       padding:0.4rem; border:1px solid #ccc; border-radius:4px;
+      font-size:1rem;
     }
-    #habitListContainer { margin:1rem 0; }
+    /* Habit List */
+    #habitListContainer { margin-bottom:1rem; }
     #habitList { list-style:none; }
     #habitList li {
-      background:var(--card); padding:0.5rem; margin:0.2rem 0;
-      border-radius:4px; display:flex; justify-content:space-between;
+      background:var(--card); padding:.5rem;
+      margin:.2rem 0; border-radius:4px;
+      display:flex; justify-content:space-between;
       align-items:center;
     }
-
-    /* Monthly Calendar */
-    .calendar {
-      display:grid; gap:2px; grid-template-columns:repeat(7,1fr);
-      background:var(--card); padding:4px; border-radius:6px;
+    #habitList li button {
+      background:transparent; border:none; font-size:1rem;
+      cursor:pointer;
     }
-    .day {
-      padding:0.5rem; text-align:right;
-      background:rgba(0,0,0,0.03); cursor:pointer;
-      user-select:none;
+    /* Monthly View */
+    #monthView {
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      gap:2px;
+      background:var(--card);
+      padding:4px;
+      border-radius:6px;
+      margin-bottom:1rem;
     }
-    .day[data-done="1"] {
-      background:var(--primary); color:#fff;
-    }
-
-    /* Weekly Grid */
-    .weekly {
-      display:grid; gap:2px; background:var(--card);
-      padding:4px; border-radius:6px;
-      grid-template-columns:4rem repeat(7,1fr);
-    }
-    .whabit { padding:0.5rem; }
-    .wday {
-      padding:0.5rem; text-align:center;
-      background:rgba(0,0,0,0.03); cursor:pointer;
-      user-select:none;
-    }
-    .wday[data-done="1"] {
-      background:var(--primary); color:#fff;
-    }
-
-    /* Daily List */
-    #dailyList { list-style:none; margin:1rem 0; }
-    #dailyList li {
-      background:var(--card); padding:0.5rem; margin:0.3rem 0;
-      border-radius:4px; display:flex;
-      justify-content:space-between; align-items:center;
+    #monthView .day {
+      padding:.5rem; text-align:right;
+      background:rgba(0,0,0,0.05);
       cursor:pointer; user-select:none;
+      border-radius:4px;
     }
-    #dailyList li.done { text-decoration:line-through; opacity:0.6; }
-
+    #monthView .day.done {
+      background:var(--primary); color:#fff;
+    }
+    /* Weekly View */
+    #weekView {
+      width:100%; overflow-x:auto; margin-bottom:1rem;
+    }
+    #weekTable {
+      width:100%; border-collapse:collapse;
+      background:var(--card); border-radius:6px;
+      overflow:hidden;
+    }
+    #weekTable th, #weekTable td {
+      padding:8px; border:1px solid #eee;
+      text-align:center; min-width:40px;
+    }
+    #weekTable td.habit {
+      text-align:left; background:rgba(0,0,0,0.05);
+    }
+    #weekTable td.done {
+      background:var(--primary); color:#fff;
+    }
+    /* Daily View */
+    #dailyList { list-style:none; margin-bottom:1rem; }
+    #dailyList li {
+      background:var(--card); padding:.5rem;
+      margin:.3rem 0; border-radius:4px;
+      display:flex; justify-content:space-between;
+      align-items:center; cursor:pointer; user-select:none;
+    }
+    #dailyList li.done {
+      text-decoration:line-through; opacity:.6;
+    }
+    #dailyList li button {
+      background:transparent; border:none; font-size:1rem;
+      cursor:pointer;
+    }
     /* Stats */
     #stats { background:var(--card); padding:1rem; border-radius:6px; }
   </style>
@@ -104,28 +137,28 @@
 <body data-theme="light">
   <header>
     <h1>HabitFlow</h1>
-    <p>Daily habit tracker with multiple views & reminders</p>
+    <p>Track habits with Monthly, Weekly, Daily views & reminders</p>
   </header>
 
   <main>
-    <!-- Habit Creation -->
+    <!-- create habit -->
     <div id="habitForm">
-      <input type="text" id="habitName" placeholder="Habit name…"/>
+      <input type="text" id="habitName" placeholder="Habit name…" />
       <select id="habitIcon">
         <option>🔥</option><option>💪</option><option>🧘</option>
         <option>📚</option><option>🍎</option>
       </select>
-      <input type="time" id="habitTime" title="Optional reminder time"/>
+      <input type="time" id="habitTime" title="Optional reminder time" />
       <button id="btnAddHabit">Add Habit</button>
     </div>
 
-    <!-- Habit List -->
+    <!-- list habits -->
     <div id="habitListContainer">
       <h3>Your Habits</h3>
       <ul id="habitList"></ul>
     </div>
 
-    <!-- View Controls -->
+    <!-- controls -->
     <div class="controls">
       <button data-view="month" class="btnView">Monthly</button>
       <button data-view="week"  class="btnView">Weekly</button>
@@ -137,257 +170,221 @@
       <input type="file" id="importInput" accept=".json" class="hidden"/>
     </div>
 
-    <!-- Monthly Calendar -->
-    <div id="monthView" class="calendar hidden"></div>
+    <!-- views -->
+    <div id="monthView" class="hidden"></div>
 
-    <!-- Weekly Grid -->
-    <div id="weekView" class="weekly hidden"></div>
+    <div id="weekView" class="hidden">
+      <table id="weekTable">
+        <thead><tr><th>Habit</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
 
-    <!-- Daily Schedule -->
     <ul id="dailyList" class="hidden"></ul>
 
-    <!-- Stats Chart -->
     <div id="stats" class="hidden">
       <canvas id="statsChart" width="600" height="300"></canvas>
     </div>
   </main>
 
   <footer>
-    © 2025 Bocaletto Luca | 
+    © 2025 Bocaletto Luca |
     <a href="https://github.com/bocaletto-luca/HabitFlow" target="_blank" rel="noopener">Repository</a>
   </footer>
 
-  <!-- Dependencies -->
+  <!-- dependencies -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.7/dayjs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <script>
   document.addEventListener('DOMContentLoaded', () => {
-    console.clear(); console.log('🚀 HabitFlow Loaded');
+    const KEY = 'HabitFlowDB';
+    let db = JSON.parse(localStorage.getItem(KEY) || '{"habits":[]}');
+    function save(){ localStorage.setItem(KEY, JSON.stringify(db)); }
 
-    const STORAGE_KEY = 'HabitFlowDB';
-    let db = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"habits":[]}');
-    const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-
-    // UI references
-    const habitName   = document.getElementById('habitName');
-    const habitIcon   = document.getElementById('habitIcon');
-    const habitTime   = document.getElementById('habitTime');
-    const btnAddHabit = document.getElementById('btnAddHabit');
-    const habitList   = document.getElementById('habitList');
-    const views       = {
+    // refs
+    const hfName   = document.getElementById('habitName');
+    const hfIcon   = document.getElementById('habitIcon');
+    const hfTime   = document.getElementById('habitTime');
+    const btnAdd   = document.getElementById('btnAddHabit');
+    const listUL   = document.getElementById('habitList');
+    const views    = {
       month: document.getElementById('monthView'),
       week:  document.getElementById('weekView'),
       day:   document.getElementById('dailyList'),
       stats: document.getElementById('stats')
     };
-    const btnViews    = [...document.querySelectorAll('.btnView')];
-    const btnStats    = document.getElementById('btnStats');
-    const btnExport   = document.getElementById('btnExport');
-    const btnImport   = document.getElementById('btnImport');
-    const importInput = document.getElementById('importInput');
-    const btnTheme    = document.getElementById('btnTheme');
-    const body        = document.body;
+    const btnViews = [...document.querySelectorAll('.btnView')];
+    const btnStats = document.getElementById('btnStats');
+    const btnExp   = document.getElementById('btnExport');
+    const btnImp   = document.getElementById('btnImport');
+    const inpImp   = document.getElementById('importInput');
+    const btnTheme = document.getElementById('btnTheme');
+    const weekTbl  = document.getElementById('weekTable');
+    const weekTbody= weekTbl.querySelector('tbody');
+    const body     = document.body;
+    let current = null;
 
-    let currentView = null; // no view on load
-
-    // Helpers
+    // helper
     const today = () => dayjs().format('YYYY-MM-DD');
-    const renderViews = () => {
-      Object.keys(views).forEach(v => {
-        views[v].classList.toggle('hidden', currentView !== v);
+    function toggle(v) {
+      current = current===v? null : v;
+      Object.keys(views).forEach(k=>{
+        views[k].classList.toggle('hidden', current!==k);
       });
-    };
-    const notify = msg => {
-      if (Notification.permission === 'granted') {
-        new Notification('HabitFlow', { body: msg });
-      }
-    };
+    }
+    function notify(msg) {
+      if(Notification.permission==='granted') new Notification('HabitFlow',{body:msg});
+    }
 
-    // Render Habit List
-    function renderHabitList() {
-      habitList.innerHTML = '';
-      db.habits.forEach(h => {
-        const li = document.createElement('li');
-        li.textContent = `${h.icon} ${h.name}` + (h.time ? ` @${h.time}` : '');
-        const btnDel = document.createElement('button');
-        btnDel.textContent = '🗑️';
-        btnDel.onclick = () => {
-          db.habits = db.habits.filter(x => x.id !== h.id);
-          save(); renderHabitList(); renderAll();
+    // render list
+    function renderList(){
+      listUL.innerHTML='';
+      db.habits.forEach(h=>{
+        const li=document.createElement('li');
+        li.textContent=`${h.icon} ${h.name}`+(h.time?` @${h.time}`:'');
+        const del=document.createElement('button');
+        del.textContent='🗑️';
+        del.onclick=()=>{
+          db.habits=db.habits.filter(x=>x.id!==h.id);
+          save(); renderAll();
         };
-        li.appendChild(btnDel);
-        habitList.appendChild(li);
+        li.appendChild(del);
+        listUL.appendChild(li);
       });
     }
 
-    // Monthly View
-    function renderMonth() {
-      const c = views.month;
-      c.innerHTML = '';
-      const daysInMonth = dayjs().daysInMonth();
-      for (let d = 1; d <= daysInMonth; d++) {
-        const date = dayjs().date(d).format('YYYY-MM-DD');
-        const done = db.habits.some(h => h.records?.[date]);
-        const div = document.createElement('div');
-        div.className = 'day';
-        if (done) div.dataset.done = '1';
-        div.textContent = d;
-        div.onclick = () => {
-          db.habits.forEach(h => {
-            h.records = h.records || {};
-            h.records[date] = !h.records[date];
+    // monthly
+    function renderMonth(){
+      const m=views.month; m.innerHTML='';
+      const dim=dayjs().daysInMonth();
+      for(let d=1;d<=dim;d++){
+        const date=dayjs().date(d).format('YYYY-MM-DD');
+        const done=db.habits.some(h=>h.records?.[date]);
+        const div=document.createElement('div');
+        div.className='day'+(done?' done':'');
+        div.textContent=d;
+        div.onclick=()=>{
+          db.habits.forEach(h=>{
+            h.records=h.records||{};
+            h.records[date]=!h.records[date];
           });
           save(); renderMonth();
         };
-        c.appendChild(div);
+        m.appendChild(div);
       }
     }
 
-    // Weekly View
-    function renderWeek() {
-      const c = views.week;
-      c.innerHTML = '';
-      c.appendChild(document.createElement('div')); // blank header
-      for (let i = 0; i < 7; i++) {
-        const dow = dayjs().startOf('week').add(i, 'day');
-        const hd = document.createElement('div');
-        hd.className = 'wday';
-        hd.textContent = dow.format('dd').toUpperCase();
-        c.appendChild(hd);
+    // weekly
+    function renderWeek(){
+      // header
+      const thead=weekTbl.querySelector('thead tr');
+      thead.innerHTML='<th>Habit</th>';
+      for(let i=0;i<7;i++){
+        const dow=dayjs().startOf('week').add(i,'day');
+        const th=document.createElement('th');
+        th.textContent=dow.format('dd').toUpperCase();
+        thead.appendChild(th);
       }
-      db.habits.forEach(h => {
-        const lbl = document.createElement('div');
-        lbl.className = 'whabit';
-        lbl.textContent = `${h.icon} ${h.name}`;
-        c.appendChild(lbl);
-        for (let i = 0; i < 7; i++) {
-          const date = dayjs().startOf('week').add(i, 'day').format('YYYY-MM-DD');
-          const cell = document.createElement('div');
-          cell.className = 'wday';
-          if (h.records?.[date]) cell.dataset.done = '1';
-          cell.onclick = () => {
-            h.records = h.records || {};
-            h.records[date] = !h.records[date];
+      // body
+      weekTbody.innerHTML='';
+      db.habits.forEach(h=>{
+        const tr=document.createElement('tr');
+        const tdLab=document.createElement('td');
+        tdLab.textContent=`${h.icon} ${h.name}`;
+        tdLab.className='habit';
+        tr.appendChild(tdLab);
+        for(let i=0;i<7;i++){
+          const date=dayjs().startOf('week').add(i,'day').format('YYYY-MM-DD');
+          const td=document.createElement('td');
+          if(h.records?.[date]) td.classList.add('done');
+          td.onclick=()=>{
+            h.records=h.records||{};
+            h.records[date]=!h.records[date];
             save(); renderWeek();
           };
-          c.appendChild(cell);
+          tr.appendChild(td);
         }
+        weekTbody.appendChild(tr);
       });
     }
 
-    // Daily View
-    function renderDay() {
-      const list = views.day;
-      list.innerHTML = '';
-      const date = today();
-      db.habits.slice().sort((a,b) => (a.time||'') > (b.time||'') ? 1 : -1)
-        .forEach(h => {
-          const done = h.records?.[date];
-          const li = document.createElement('li');
-          if (done) li.classList.add('done');
-          li.innerHTML = `
-            <span>${h.icon} ${h.name}${h.time? ' @'+h.time : ''}</span>
-            <button>✔️</button>`;
-          li.querySelector('button').onclick = () => {
-            h.records = h.records || {};
-            h.records[date] = !h.records[date];
-            save(); renderDay();
-            if (h.time && h.records[date]) notify(`Completed: ${h.name}`);
-          };
-          list.appendChild(li);
-        });
-    }
-
-    // Stats View
-    function renderStats() {
-      currentView = 'stats'; renderViews();
-      const ctx = document.getElementById('statsChart').getContext('2d');
-      const labels = db.habits.map(h => h.name);
-      const data   = db.habits.map(h => {
-        const recs = Object.values(h.records || {});
-        return recs.length
-          ? Math.round((recs.filter(Boolean).length/recs.length)*100)
-          : 0;
-      });
-      new Chart(ctx, {
-        type: 'bar',
-        data: { labels, datasets:[{ label:'% Done', data, backgroundColor:labels.map(()=>getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()) }]},
-        options:{scales:{y:{beginAtZero:true,max:100}}}
+    // daily
+    function renderDay(){
+      const ul=views.day; ul.innerHTML='';
+      const dt=today();
+      db.habits.slice().sort((a,b)=>(a.time||'')>(b.time||'')?1:-1)
+      .forEach(h=>{
+        const li=document.createElement('li');
+        const done=!!h.records?.[dt];
+        if(done) li.classList.add('done');
+        li.innerHTML=`<span>${h.icon} ${h.name}${h.time?` @${h.time}`:''}</span><button>✔️</button>`;
+        li.querySelector('button').onclick=()=>{
+          h.records=h.records||{};
+          h.records[dt]=!h.records[dt];
+          save(); renderDay();
+          if(h.time&&h.records[dt]) notify(`Completed: ${h.name}`);
+        };
+        ul.appendChild(li);
       });
     }
 
-    // Render All
-    function renderAll() {
-      renderHabitList();
+    // stats
+    function renderStats(){
+      toggle('stats');
+      const ctx=document.getElementById('statsChart').getContext('2d');
+      const labels=db.habits.map(h=>h.name);
+      const data=db.habits.map(h=>{
+        const recs=Object.values(h.records||{});
+        return recs.length?Math.round(recs.filter(Boolean).length/recs.length*100):0;
+      });
+      new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'% Done',data,backgroundColor:labels.map(()=>getComputedStyle(document.documentElement).getPropertyValue('--primary').trim())}]},options:{scales:{y:{beginAtZero:true,max:100}}}});
+    }
+
+    // render all
+    function renderAll(){
+      renderList();
       renderMonth();
       renderWeek();
       renderDay();
-      renderViews();
+      toggle(current);
     }
 
-    // Bindings
-
-    btnAddHabit.onclick = () => {
-      const name = habitName.value.trim();
-      if (!name) return alert('Enter a habit name');
-      db.habits.push({ 
-        id:Date.now().toString(), 
-        name, icon:habitIcon.value, time:habitTime.value, records:{} 
-      });
-      save(); habitName.value=''; habitTime.value='';
-      console.log('✅ Habit added:', name);
+    // bindings
+    btnAdd.onclick=()=>{
+      const name=hfName.value.trim();
+      if(!name)return alert('Enter a habit name');
+      db.habits.push({id:Date.now().toString(),name,icon:hfIcon.value,time:hfTime.value,records:{}});
+      save(); hfName.value=''; hfTime.value='';
       renderAll();
     };
-
-    btnViews.forEach(b => {
-      b.onclick = () => {
-        const view = b.dataset.view;
-        currentView = (currentView === view) ? null : view;
-        renderViews();
-      };
-    });
-
-    btnStats.onclick = () => {
-      currentView = (currentView === 'stats') ? null : 'stats';
-      renderViews();
-      if (currentView) renderStats();
+    btnViews.forEach(b=>b.onclick=()=>toggle(b.dataset.view));
+    btnStats.onclick=renderStats;
+    btnTheme.onclick=()=>{
+      const t=body.dataset.theme==='light'?'dark':'light';
+      body.dataset.theme=t;
+      btnTheme.textContent=t==='dark'?'☀️ Light Mode':'🌙 Dark Mode';
     };
-
-    btnTheme.onclick = () => {
-      const next = body.dataset.theme==='light' ? 'dark' : 'light';
-      body.dataset.theme = next;
-      btnTheme.textContent = next==='dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
-    };
-
-    btnExport.onclick = () => {
-      const blob = new Blob([JSON.stringify(db,null,2)], { type:'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'habitflow-data.json';
+    btnExp.onclick=()=>{
+      const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download='habitflow-data.json';
       a.click();
       URL.revokeObjectURL(a.href);
     };
-
-    btnImport.onclick = () => importInput.click();
-    importInput.onchange = e => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const r = new FileReader();
-      r.onload = () => {
-        try {
-          db = JSON.parse(r.result);
-          save(); renderAll();
-          alert('Data imported successfully');
-        } catch {
-          alert('Invalid JSON file');
-        }
+    btnImp.onclick=()=>inpImp.click();
+    inpImp.onchange=e=>{
+      const f=e.target.files[0];
+      if(!f)return;
+      const r=new FileReader();
+      r.onload=()=>{
+        try{db=JSON.parse(r.result);save();renderAll();alert('Imported');}
+        catch{alert('Invalid JSON');}
       };
-      r.readAsText(file);
-      importInput.value = '';
+      r.readAsText(f);
+      inpImp.value='';
     };
 
-    // Init
     Notification.requestPermission();
     renderAll();
   });
